@@ -46,6 +46,14 @@ class FrontControllerIT {
         usuarioRepository.deleteAll();
     }
 
+    /**
+     * This test consists on the following steps:
+     * 1.- Creates a user, alice, with no bets.
+     * 2.- Calls Get /api/v1/users/{userId}/bets/total.
+     * 3.- Expects 200 Ok and deserialize the JSON body into ResTotalBetUserDto.
+     * 4.- Asserts userId matches and total == 0.
+     * This step also confirms if the service is converting a null DB sum into BigDecimal.Zero
+     * */
     @Test
     @DisplayName("Returns 0 when user has no bets")
     void total_is_zero_when_user_has_no_bets() throws Exception {
@@ -64,6 +72,14 @@ class FrontControllerIT {
         assertThat(body.total()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
+    /**
+     * This test consists on the following steps:
+     * 1.- Seeds one Item, two users, which are bob and carol.
+     * 2.- Saves bets: for bob -> 10 + 25; for carol -> 99
+     * 3.- Calls the endpoint for bob's userId.
+     * 4.- Expects 200 OK, then asserts the response has userId == bob and total == 35.
+     * This step also proves it sums only the requested user's bets and ignores others.
+     * */
     @Test
     @DisplayName("Sums only the bets for the requested user")
     void sums_bets_for_user_only() throws Exception {
