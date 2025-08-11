@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -195,5 +196,55 @@ class FrontControllerIT {
         assertThat(saved.getAmount()).isEqualTo(amount);
         assertThat(saved.getUsuario().getName()).isEqualTo(username50);
         assertThat(saved.getItem().getId()).isEqualTo(item.getId());
+    }
+
+    @Test
+    @DisplayName("Measure latency of /winner/{itemId}")
+    void measure_winner_endpoint_latency() throws Exception {
+        // ----- Arrange: create realistic data set -----
+        ItemModel item = itemRepository.save(new ItemModel(null, "PerfItem", java.util.List.of()));
+        UsuarioModel user = usuarioRepository.save(new UsuarioModel(null, "perf_user", java.util.List.of()));
+
+        // Seed N bets so findMaxBid has some work to do
+        final int betCount = Integer.getInteger("perf.bets", 1_000);
+        for (int i = 1; i <= betCount; i++) {
+            // amounts must be integers in your model
+            apuestaRepository.save(new ApuestaModel(null, i, user, item));
+        }
+        assertThat(apuestaRepository.count()).isEqualTo(betCount);
+
+        final String url = "/api/v1/winner/" + item.getId();
+
+        // ----- Warm-up -----
+        final int warmup = Integer.getInteger("perf.warmup", 10);
+        for (int i = 0; i < warmup; i++) {
+            mockMvc.perform(get(url).accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk());
+        }
+
+        // ----- Measure -----
+        final int runs = Integer.getInteger("perf.runs", 50);
+        long[] timesNs = new long[runs];
+
+        for (int i = 0; i < runs; i++) {
+            long t0 = System.nanoTime();
+            mockMvc.perform(get(url).accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk());
+            long t1 = System.nanoTime();
+            timesNs[i] = (t1 - t0);
+        }
+
+        // ----- Stats -----
+        Arrays.sort(timesNs);
+        double avgMs = Arrays.stream(timesNs).average().orElse(0) / 1_000_000.0;
+        double p95Ms = timesNs[(int)Math.floor(runs * 0.95) - 1] / 1_000_000.0;
+        double maxMs = timesNs[runs - 1] / 1_000_000.0;
+
+        System.out.printf("Winner endpoint perf: runs=%d, bets=%d, avg=%.2f ms, p95=%.2f ms, max=%.2f ms%n",
+                runs, betCount, avgMs, p95Ms, maxMs);
+
+        // Optional: VERY loose assertion just to catch regressions
+        // Assert avg under 500ms for this in-memory setup (tune as you like or remove)
+        assertThat(avgMs).isLessThan(500.0);
     }
 }

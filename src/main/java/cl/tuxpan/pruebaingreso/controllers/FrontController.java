@@ -3,6 +3,7 @@ package cl.tuxpan.pruebaingreso.controllers;
 import cl.tuxpan.pruebaingreso.dtos.*;
 import cl.tuxpan.pruebaingreso.services.interfaces.FrontService;
 import org.springframework.web.bind.annotation.*;
+import io.micrometer.core.annotation.Timed;
 
 
 /**
@@ -74,6 +75,7 @@ public class FrontController {
    * @param itemId: Item identifier (path variable)
    * @return Winner data (item + user + amount)  or {@code null} if the item has no bets
    * */
+  @Timed(value = "winner.endpoint", percentiles = {0.5, 0.9, 0.99})
   @GetMapping("/winner/{itemId}")
   public ResWinnerDto getWinner(@PathVariable Integer itemId) {
     return frontService.getWinner(itemId);
