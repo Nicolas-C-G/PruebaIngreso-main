@@ -120,7 +120,9 @@ public class FrontServiceImpl implements FrontService {
    * {@inheritDoc}
    */
   public ResTotalBetUserDto getUserTotalBet(Integer userId) {
-    BigDecimal total = apuestaRepository.sumAmountByUserId(userId);
+    //BigDecimal total = apuestaRepository.sumAmountByUserId(userId);
+    BigDecimal total = Optional.ofNullable(apuestaRepository.sumAmountByUserId(userId))
+            .orElse(BigDecimal.ZERO);
     return new ResTotalBetUserDto(userId, total);
   }
 

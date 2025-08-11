@@ -30,9 +30,9 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
    */
 
   @Query("""
-           select coalesce(sum(a.amount), 0)
-           from ApuestaModel a
-           where a.user.id = :userId
-           """)
+       select sum(a.amount)
+       from ApuestaModel a
+       where a.usuario.id = :userId
+       """)
   BigDecimal sumAmountByUserId(@Param("userId") Integer userId);
 }

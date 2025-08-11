@@ -52,4 +52,7 @@ public interface FrontService {
    * @return Return the Winner or {@code null} if no existing bets.
    * */
   ResWinnerDto getWinner(Integer id);
+
+  /** Returns the total bet amount for a given user. */
+  ResTotalBetUserDto getUserTotalBet(Integer userId);
 }
