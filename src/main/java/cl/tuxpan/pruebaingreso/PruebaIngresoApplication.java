@@ -2,6 +2,7 @@ package cl.tuxpan.pruebaingreso;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Entry point for the Spring Boot application.
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Compose integration) can bring up the Postgres service defined in {@code compose.yaml}.
  */
 
+@EnableScheduling
 @SpringBootApplication
 public class PruebaIngresoApplication {
 

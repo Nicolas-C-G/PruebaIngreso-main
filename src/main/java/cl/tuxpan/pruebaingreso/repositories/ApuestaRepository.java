@@ -2,6 +2,7 @@ package cl.tuxpan.pruebaingreso.repositories;
 
 import cl.tuxpan.pruebaingreso.models.ApuestaModel;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -35,4 +36,15 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
        where a.usuario.id = :userId
        """)
   BigDecimal sumAmountByUserId(@Param("userId") Integer userId);
+
+  @Modifying
+  @Query(value = """
+    DELETE FROM subasta_apuesta a
+    USING subasta_usuario u
+    WHERE a.apuesta_usuario_id = u.usuario_id
+      AND u.usuario_nombre ~ '[^A-Za-z0-9 ]'
+    """, nativeQuery = true)
+  int deleteBetsWithSpecialCharUsernames();
+
+
 }
