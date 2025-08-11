@@ -64,7 +64,7 @@ public class FrontController {
    * */
 
   @PostMapping("/apuesta")
-  public ResApuestaDto addApuesta(@RequestBody ReqAddApuestaDto reqAddApuestaDto) {
+  public ResApuestaDto addApuesta(@RequestBody @jakarta.validation.Valid ReqAddApuestaDto reqAddApuestaDto) {
     return frontService.addApuesta(reqAddApuestaDto);
   }
 

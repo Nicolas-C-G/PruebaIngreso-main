@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -105,5 +106,94 @@ class FrontControllerIT {
         ResTotalBetUserDto body = objectMapper.readValue(json, ResTotalBetUserDto.class);
         assertThat(body.userId()).isEqualTo(userA.getId());
         assertThat(body.total()).isEqualByComparingTo(new BigDecimal("35"));
+    }
+
+    @Test
+    @DisplayName("Rejects short user name (username len < 5 )")
+    void rejects_short_username() throws Exception {
+        // First create an item so itemId=1 exists
+        ItemModel item = itemRepository.save(new ItemModel(null, "Laptop", java.util.List.of()));
+
+        String body = """
+                {"itemId":%d, "usuarioNombre":"abcd", "montoApuesta":1000}
+                """.formatted(item.getId());
+
+        mockMvc.perform(post("/api/v1/apuesta")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Rejects out of range amount (amount < 1000)")
+    void rejects_out_of_range_amount() throws Exception {
+        // First create an item so itemId=1 exists
+        ItemModel item = itemRepository.save(new ItemModel(null, "Laptop", java.util.List.of()));
+
+        String body = """
+            {"itemId":%d,"usuarioNombre":"validName","montoApuesta":999}
+        """.formatted(item.getId());
+
+        mockMvc.perform(post("/api/v1/apuesta")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Accepts minimal valid values (username len=5 and amount=1000)")
+    void accepts_min_boundary_values() throws Exception {
+        // Given: an item to bet on
+        ItemModel item = itemRepository.save(new ItemModel(null, "Phone", java.util.List.of()));
+
+        // Minimal valid username length = 5, minimum amount = 1000
+        String username = "abcde"; // Just 5 characters
+        int amount = 1000;
+
+        String body = """
+                {"itemId": %d, "usuarioNombre": "%s", "montoApuesta": %d}
+                """.formatted(item.getId(), username, amount);
+
+        mockMvc.perform(post("/api/v1/apuesta")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+
+        // Verify persisted data
+        var all = apuestaRepository.findAll();
+        assertThat(all).hasSize(1);
+        ApuestaModel saved = all.get(0);
+        assertThat(saved.getAmount()).isEqualTo(amount);
+        assertThat(saved.getUsuario().getName()).isEqualTo(username);
+        assertThat(saved.getItem().getId()).isEqualTo(item.getId());
+    }
+
+    @Test
+    @DisplayName("Accepts maximal valid values (username len=50, amount=999,999,999)")
+    void accepts_max_boundary_values() throws Exception {
+        // Given
+        ItemModel item = itemRepository.save(new ItemModel(null, "TV", java.util.List.of()));
+
+        // Build a 50-char username
+        String username50 = "u".repeat(50);
+        int amount = 999_999_999;
+
+        String body = """
+        {"itemId":%d,"usuarioNombre":"%s","montoApuesta":%d}
+    """.formatted(item.getId(), username50, amount);
+
+        // When / Then
+        mockMvc.perform(post("/api/v1/apuesta")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+
+        // Verify persisted data
+        var all = apuestaRepository.findAll();
+        assertThat(all).hasSize(1);
+        ApuestaModel saved = all.get(0);
+        assertThat(saved.getAmount()).isEqualTo(amount);
+        assertThat(saved.getUsuario().getName()).isEqualTo(username50);
+        assertThat(saved.getItem().getId()).isEqualTo(item.getId());
     }
 }

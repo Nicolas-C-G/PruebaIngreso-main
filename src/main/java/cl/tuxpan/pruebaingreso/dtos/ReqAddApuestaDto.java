@@ -1,5 +1,7 @@
 package cl.tuxpan.pruebaingreso.dtos;
 
+import jakarta.validation.constraints.*;
+
 /**
  * Request payload for placing a new bet (apuesta).
  *
@@ -8,4 +10,13 @@ package cl.tuxpan.pruebaingreso.dtos;
  * @param montoApuesta  Amount of the bet
  */
 
-public record ReqAddApuestaDto(Integer itemId, String usuarioNombre, Integer montoApuesta) {}
+public record ReqAddApuestaDto(
+        @NotNull Integer itemId,
+        @NotBlank
+        @Size(min = 5, max = 50)
+        String usuarioNombre,
+        @NotNull
+        @Min(1000)
+        @Max(999999999)
+        Integer montoApuesta
+) {}
