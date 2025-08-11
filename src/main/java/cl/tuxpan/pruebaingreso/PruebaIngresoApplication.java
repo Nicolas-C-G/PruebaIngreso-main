@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Entry point for the Spring Boot application.
- * <p>
+ *
  * Boots the web context, sets up the REST layer, and (via Spring Boot's Docker
  * Compose integration) can bring up the Postgres service defined in {@code compose.yaml}.
  */

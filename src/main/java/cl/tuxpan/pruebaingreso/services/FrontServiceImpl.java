@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 
 /**
@@ -113,4 +114,14 @@ public class FrontServiceImpl implements FrontService {
                     apuesta.getAmount()))
         .orElse(null);
   }
+
+  @Override
+  /**
+   * {@inheritDoc}
+   */
+  public ResTotalBetUserDto getUserTotalBet(Integer userId) {
+    BigDecimal total = apuestaRepository.sumAmountByUserId(userId);
+    return new ResTotalBetUserDto(userId, total);
+  }
+
 }

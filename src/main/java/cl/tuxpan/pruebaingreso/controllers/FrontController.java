@@ -78,4 +78,16 @@ public class FrontController {
   public ResWinnerDto getWinner(@PathVariable Integer itemId) {
     return frontService.getWinner(itemId);
   }
+
+  /**
+   * Returns the total bet amount placed by a specific user.
+   *
+   * @param userId: User identifier (path variable)
+   * @return A DTO with the user id and the aggregated total bet amount
+   * */
+  @GetMapping("/users/{userId}/bets/total")
+  public ResTotalBetUserDto getUserTotalBet(@PathVariable Integer userId) {
+    return frontService.getUserTotalBet(userId);
+  }
+
 }
