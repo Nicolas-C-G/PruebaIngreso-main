@@ -56,15 +56,15 @@ base de datos.
 El cliente nos ha solicitado que se agregue un nuevo endpoint para obtener el monto total apostado por un usuario.
 
 Resumen de lo realizado para este paso:
-0- Se procedió a crear y configurar una maquina virtual Ubuntu 24 en Virtual box para poder realizar la prueba en un ambiente aislado. 
+- Se procedió a crear y configurar una maquina virtual Ubuntu 24 en Virtual box para poder realizar la prueba en un ambiente aislado. 
    Se instaló Java21, IntelliJ IDEA Community y Docker. 
-1- Se descargo el código en la VM y se abrió con IntelliJ IDEA.
-2- Desde el IDE se creo el repositorio en GitHub y las ramas main y develop.
-3- Se probó que el código funcionará.
-4- Se buscó entender el código por lo cual se hizo un analisis de las funciones que habian y se generó documentación al respecto (commit: 9c5e165 develop)
-5- Una vez interiorizado de lo que habia que hacer, se procedio a crear un nuevo endpoint que retornará el monto total apostado por el usuario.
-6- Se creó un archivo de pruebas para testear esta funcionalidad (FrontControllerIT.java) 
-7- El resultado de esto lo encontrará en el commit 9d35ebb de la rama develop.
+- Se descargo el código en la VM y se abrió con IntelliJ IDEA.
+- Desde el IDE se creo el repositorio en GitHub y las ramas main y develop.
+- Se probó que el código funcionará.
+- Se buscó entender el código por lo cual se hizo un analisis de las funciones que habian y se generó documentación al respecto (commit: 9c5e165 develop)
+- Una vez interiorizado de lo que habia que hacer, se procedio a crear un nuevo endpoint que retornará el monto total apostado por el usuario.
+- Se creó un archivo de pruebas para testear esta funcionalidad (FrontControllerIT.java) 
+- El resultado de esto lo encontrará en el commit 9d35ebb de la rama develop.
 
 ### Parte 2
 
