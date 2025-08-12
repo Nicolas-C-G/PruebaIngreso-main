@@ -5,10 +5,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Entry point for the Spring Boot application.
- *
- * Boots the web context, sets up the REST layer, and (via Spring Boot's Docker
- * Compose integration) can bring up the Postgres service defined in {@code compose.yaml}.
+ * Main entry point for the Prueba Ingreso Spring Boot application.
+ * <p>
+ * Responsibilities:
+ * <ul>
+ *   <li>Bootstraps the Spring Boot application context</li>
+ *   <li>Enables scheduled tasks via {@link EnableScheduling}</li>
+ *   <li>Initializes the REST layer and data access layer</li>
+ *   <li>Optionally integrates with Docker Compose to bring up dependencies
+ *       such as a Postgres database, as configured in {@code compose.yaml}</li>
+ * </ul>
  */
 
 @EnableScheduling

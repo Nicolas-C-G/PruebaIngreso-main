@@ -25,7 +25,13 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
   Optional<ApuestaModel> findMaxBid(Integer id);
 
   /**
-   * Portable alternative: highest bet for an item (no JPQL LIMIT).
+   * Finds the highest bet for the given item using a Spring Data derived query method.
+   * <p>
+   * This method avoids database-specific {@code LIMIT} syntax, making it more portable.
+   *
+   * @param id the identifier of the item
+   * @return an {@link Optional} containing the highest {@link ApuestaModel} for the item,
+   *         or empty if the item has no bets
    */
   Optional<ApuestaModel> findTopByItem_IdOrderByAmountDesc(Integer id);
 
@@ -43,6 +49,14 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
        """)
   BigDecimal sumAmountByUserId(@Param("userId") Integer userId);
 
+  /**
+   * Deletes all bets placed by users whose usernames contain special characters.
+   * <p>
+   * This uses a native SQL query with a regular expression match to identify
+   * invalid usernames and remove their associated bets.
+   *
+   * @return the number of bets deleted
+   */
   @Modifying
   @Query(value = """
     DELETE FROM subasta_apuesta a
@@ -53,7 +67,10 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
   int deleteBetsWithSpecialCharUsernames();
 
   /**
-   * List all bets for a given user id.
+   * Retrieves all bets placed by a given user.
+   *
+   * @param userId the identifier of the user
+   * @return a list of {@link ApuestaModel} placed by the specified user
    */
   List<ApuestaModel> findByUsuario_Id(Integer userId);
 

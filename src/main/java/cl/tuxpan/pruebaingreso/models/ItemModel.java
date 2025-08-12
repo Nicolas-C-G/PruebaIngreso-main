@@ -29,17 +29,35 @@ import java.util.Objects;
 @Table(name = "subasta_item")
 public class ItemModel {
 
+  /**
+   * Primary key for the item.
+   */
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "item_id")
   private Integer id;
 
+  /**
+   * Display name of the item.
+   */
   @Column(name = "item_nombre")
   private String name;
 
+  /**
+   * List of bets placed on this item.
+   */
   @OneToMany(mappedBy = "item")
   private List<ApuestaModel> apuestas;
 
+  /**
+   * Compares this item with another object for equality.
+   * <p>
+   * Two items are considered equal if they share the same {@code id}.
+   * Uses Hibernate-specific logic to handle proxy instances correctly.
+   *
+   * @param o the object to compare with
+   * @return {@code true} if the objects are equal, {@code false} otherwise
+   */
   @Override
   public final boolean equals(Object o) {
     if (this == o) return true;
@@ -57,6 +75,13 @@ public class ItemModel {
     return getId() != null && Objects.equals(getId(), itemModel.getId());
   }
 
+  /**
+   * Returns a hash code value for the item.
+   * <p>
+   * Uses Hibernate-specific logic to handle proxy instances correctly.
+   *
+   * @return the hash code for this entity
+   */
   @Override
   public final int hashCode() {
     return this instanceof HibernateProxy obj

@@ -25,13 +25,19 @@ import java.math.BigDecimal;
  */
 @Slf4j
 @Service
-/** {@inheritDoc} */
 public class FrontServiceImpl implements FrontService {
 
   ItemRepository itemRepository;
   ApuestaRepository apuestaRepository;
   UsuarioRepository usuarioRepository;
 
+  /**
+   * Creates a new {@code FrontServiceImpl} with the required repositories.
+   *
+   * @param itemRepository    repository for auction items
+   * @param apuestaRepository repository for bets
+   * @param usuarioRepository repository for users
+   */
   FrontServiceImpl(
       ItemRepository itemRepository,
       ApuestaRepository apuestaRepository,
@@ -41,8 +47,8 @@ public class FrontServiceImpl implements FrontService {
     this.usuarioRepository = usuarioRepository;
   }
 
-  @Override
   /** {@inheritDoc} */
+  @Override
   public ResItemDto addItem(ReqAddItemDto reqAddItemDto) {
     log.warn("addItem: {}", reqAddItemDto);
     ItemModel item =
@@ -50,8 +56,8 @@ public class FrontServiceImpl implements FrontService {
     return new ResItemDto(item.getId(), item.getName(), Collections.emptyList());
   }
 
-  @Override
   /** {@inheritDoc} */
+  @Override
   public ResGetItemsDto getItems() {
     return new ResGetItemsDto(
         itemRepository.findAll().stream()
@@ -64,8 +70,8 @@ public class FrontServiceImpl implements FrontService {
             .toList());
   }
 
-  @Override
   /** {@inheritDoc} */
+  @Override
   public ResItemDto getItem(Integer id) {
     return itemRepository
         .findById(id)
@@ -78,8 +84,17 @@ public class FrontServiceImpl implements FrontService {
         .orElse(null);
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * Implementation details:
+   * <ul>
+   *   <li>Throws an exception if the item does not exist</li>
+   *   <li>Automatically creates the user if they do not exist</li>
+   *   <li>Saves and returns the created bet</li>
+   * </ul>
+   */
   @Override
-  /** {@inheritDoc} */
   public ResApuestaDto addApuesta(ReqAddApuestaDto reqAddApuestaDto) {
     Optional<ItemModel> itemModel = itemRepository.findById(reqAddApuestaDto.itemId());
     ItemModel item = itemModel.orElseThrow();
@@ -99,8 +114,8 @@ public class FrontServiceImpl implements FrontService {
     return new ResApuestaDto(apuesta.getId(), apuesta.getAmount());
   }
 
-  @Override
   /** {@inheritDoc} */
+  @Override
   public ResWinnerDto getWinner(Integer id) {
     Optional<ApuestaModel> apuestaModel = apuestaRepository.findMaxBid(id);
     return apuestaModel
@@ -115,10 +130,12 @@ public class FrontServiceImpl implements FrontService {
         .orElse(null);
   }
 
-  @Override
   /**
    * {@inheritDoc}
+   * <p>
+   * If the user has no bets, returns a total of {@code BigDecimal.ZERO}.
    */
+  @Override
   public ResTotalBetUserDto getUserTotalBet(Integer userId) {
     //BigDecimal total = apuestaRepository.sumAmountByUserId(userId);
     BigDecimal total = Optional.ofNullable(apuestaRepository.sumAmountByUserId(userId))
@@ -126,6 +143,11 @@ public class FrontServiceImpl implements FrontService {
     return new ResTotalBetUserDto(userId, total);
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * Returns all bets for the given user, with item and bet details.
+   */
   @Override
   public java.util.List<ResApuestaDetailDto> getUserBets(Integer userId) {
     return apuestaRepository.findByUsuario_Id(userId).stream()

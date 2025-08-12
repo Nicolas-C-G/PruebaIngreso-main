@@ -55,8 +55,19 @@ public interface FrontService {
    * */
   ResWinnerDto getWinner(Integer id);
 
-  /** Returns the total bet amount for a given user. */
+  /**
+   * Retrieves the total bet amount placed by a given user.
+   *
+   * @param userId the identifier of the user
+   * @return a {@link ResTotalBetUserDto} containing the user's ID and total bet amount
+   */
   ResTotalBetUserDto getUserTotalBet(Integer userId);
 
+  /**
+   * Retrieves all bets placed by a given user.
+   *
+   * @param userId the identifier of the user
+   * @return a list of {@link ResApuestaDetailDto} representing the user's bets
+   */
   List<ResApuestaDetailDto> getUserBets(Integer userId);
 }

@@ -9,9 +9,12 @@ import io.micrometer.core.annotation.Timed;
 
 
 /**
- * Public Rest Api
- * Base path: {@code /api/v1}. Exposes endpoints to create/list items, place bets and query the current winner for an item
- * */
+ * Public REST API controller for managing auction items and bets.
+ * <p>
+ * Base path: {@code /api/v1}.
+ * Provides endpoints to create and list items, place bets, query the current winner,
+ * and retrieve user betting information.
+ */
 @RestController
 @RequestMapping("/api/v1")
 public class FrontController {
@@ -19,6 +22,12 @@ public class FrontController {
   private final UsuarioRepository usuarioRepository;
   private final FrontService frontService;
 
+  /**
+   * Constructs a {@code FrontController} with the required services and repositories.
+   *
+   * @param frontService       the service handling auction and bet operations
+   * @param usuarioRepository  the repository for accessing user data
+   */
   @Autowired
   FrontController(FrontService frontService, UsuarioRepository usuarioRepository) {
     this.frontService = frontService;
@@ -62,7 +71,7 @@ public class FrontController {
 
   /**
    * Places a new bet on an existing item.
-   *
+   * <p>
    * If the user does not exist, the service may create it automatically.
    *
    * @param reqAddApuestaDto: Request payload with item id, user name and bet amount.
@@ -97,10 +106,26 @@ public class FrontController {
     return frontService.getUserTotalBet(userId);
   }
 
+  /**
+   * Retrieves all bets placed by a specific user.
+   *
+   * @param userId user identifier (path variable)
+   * @return a list of detailed bet representations for the given user
+   */
+
   @GetMapping("/users/{userId}/apuestas")
   public java.util.List<ResApuestaDetailDto> getUserBets(@PathVariable Integer userId) {
     return frontService.getUserBets(userId);
   }
+
+  /**
+   * Retrieves a user by its identifier.
+   * <p>
+   * Throws a {@link RuntimeException} if the user is not found.
+   *
+   * @param userId user identifier (path variable)
+   * @return a {@link ResUsuarioDto} containing the user's ID and name
+   */
 
   @GetMapping("/users/{userId}")
   public ResUsuarioDto getUser(@PathVariable Integer userId) {
