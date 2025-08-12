@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.List;
 
 /**
  * Spring Data JPA repository for {@code ApuestaModel} entities (bets).
@@ -22,6 +23,11 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
    */
   @Query("select p from ApuestaModel p where p.item.id = ?1 order by p.amount DESC LIMIT 1")
   Optional<ApuestaModel> findMaxBid(Integer id);
+
+  /**
+   * Portable alternative: highest bet for an item (no JPQL LIMIT).
+   */
+  Optional<ApuestaModel> findTopByItem_IdOrderByAmountDesc(Integer id);
 
   /**
    * Calculates the total amount of all bets placed by a specific user.
@@ -46,5 +52,9 @@ public interface ApuestaRepository extends JpaRepository<ApuestaModel, Integer> 
     """, nativeQuery = true)
   int deleteBetsWithSpecialCharUsernames();
 
+  /**
+   * List all bets for a given user id.
+   */
+  List<ApuestaModel> findByUsuario_Id(Integer userId);
 
 }

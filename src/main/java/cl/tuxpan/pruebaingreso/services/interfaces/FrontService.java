@@ -2,6 +2,8 @@ package cl.tuxpan.pruebaingreso.services.interfaces;
 
 import cl.tuxpan.pruebaingreso.dtos.*;
 
+import java.util.List;
+
 /**
  * Application service boundary for the auction use cases.
  *
@@ -55,4 +57,6 @@ public interface FrontService {
 
   /** Returns the total bet amount for a given user. */
   ResTotalBetUserDto getUserTotalBet(Integer userId);
+
+  List<ResApuestaDetailDto> getUserBets(Integer userId);
 }

@@ -126,4 +126,16 @@ public class FrontServiceImpl implements FrontService {
     return new ResTotalBetUserDto(userId, total);
   }
 
+  @Override
+  public java.util.List<ResApuestaDetailDto> getUserBets(Integer userId) {
+    return apuestaRepository.findByUsuario_Id(userId).stream()
+            .map(a -> new ResApuestaDetailDto(
+                    a.getId(),
+                    a.getItem().getId(),
+                    a.getItem().getName(),
+                    a.getAmount()
+            ))
+            .toList();
+  }
+
 }

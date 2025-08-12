@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>My Bets</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <style>
+        :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        body { margin: 24px; background: #fafafa; color: #111; }
+        h1 { margin-bottom: 8px; }
+        .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+        .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+        .row { display:flex; gap: 8px; margin-block:8px; flex-wrap: wrap; }
+        input, select, button { padding: 10px 12px; border-radius: 10px; border: 1px solid #ddd; }
+        button { background:#111; color:#fff; cursor:pointer; border:none; }
+        pre { background:#0f172a; color:#e2e8f0; padding:12px; border-radius:10px; overflow:auto; }
+        .muted { color:#666; font-size:12px; }
+        table { width:100%; border-collapse: collapse; }
+        th, td { padding:8px 10px; border-bottom:1px solid #eee; text-align:left; }
+    </style>
+</head>
+<body>
+<h1>My Bets</h1>
+<p class="muted">Create a bet and view your bets & total.</p>
+
+<div class="grid">
+    <!-- Identify user -->
+    <div class="card">
+        <h3>Who are you?</h3>
+        <div class="row">
+            <label>User ID <input id="userId" type="number" placeholder="Your user id" /></label>
+            <button id="btnLoad">Load my data</button>
+        </div>
+        <p class="muted">Tip: if you don't know your id, place a bet with your name once in the other page, then inspect totals.</p>
+        <pre id="outUser"></pre>
+    </div>
+
+    <!-- Place bet -->
+    <div class="card">
+        <h3>Place a Bet</h3>
+        <div class="row">
+            <label>Item <select id="itemSelect"></select></label>
+            <label>Username <input id="betUser" placeholder="usuarioNombre (5–50 chars)" /></label>
+            <label>Amount <input id="betAmount" type="number" placeholder=">= 1000" /></label>
+            <button id="btnPlace">Place bet</button>
+        </div>
+        <pre id="outPlace"></pre>
+    </div>
+
+    <!-- My bets -->
+    <div class="card">
+        <h3>My Bets</h3>
+        <div class="row">
+            <button id="btnRefreshBets">Refresh</button>
+        </div>
+        <table>
+            <thead><tr><th>ID</th><th>Item</th><th>Amount</th></tr></thead>
+            <tbody id="betsBody"></tbody>
+        </table>
+    </div>
+
+    <!-- My total -->
+    <div class="card">
+        <h3>My Total</h3>
+        <div class="row">
+            <button id="btnRefreshTotal">Refresh</button>
+        </div>
+        <pre id="outTotal"></pre>
+    </div>
+</div>
+
+<script>
+    const BASE = '/api/v1';
+
+    const $ = id => document.getElementById(id);
+    const show = (id, data) => $(id).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+
+    async function getJSON(url) {
+      const res = await fetch(url);
+      const text = await res.text();
+      let data; try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) throw new Error((data && data.message) || res.statusText);
+      return data;
+    }
+    async function postJSON(url, body) {
+      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      const text = await res.text();
+      let data; try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) throw new Error((data && data.message) || res.statusText);
+      return data;
+    }
+
+    // Load items into select
+    async function loadItems() {
+      const data = await getJSON(`${BASE}/item`);
+      const sel = $('itemSelect');
+      sel.innerHTML = '';
+      for (const it of (data.items || [])) {
+        const opt = document.createElement('option');
+        opt.value = it.id;
+        opt.textContent = `${it.id} — ${it.name}`;
+        sel.appendChild(opt);
+      }
+    }
+
+    // Render bets
+    function renderBets(bets) {
+      const tbody = $('betsBody');
+      tbody.innerHTML = '';
+      for (const b of bets) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${b.id}</td><td>${b.itemId} — ${b.itemName}</td><td>${b.amount}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // Handlers
+    $('btnLoad').onclick = async () => {
+      show('outUser', '…');
+      try {
+        await loadItems();
+        const uid = Number($('userId').value);
+        const total = await getJSON(`${BASE}/users/${uid}/bets/total`);
+        const bets  = await getJSON(`${BASE}/users/${uid}/apuestas`);
+        show('outUser', { total });
+        renderBets(bets);
+      } catch (e) { show('outUser', String(e)); }
+    };
+
+    $('btnPlace').onclick = async () => {
+      show('outPlace', '…');
+      try {
+        const itemId = Number($('itemSelect').value);
+        const usuarioNombre = $('betUser').value.trim();
+        const montoApuesta = Number($('betAmount').value);
+        const data = await postJSON(`${BASE}/apuesta`, { itemId, usuarioNombre, montoApuesta });
+        show('outPlace', data);
+      } catch (e) { show('outPlace', String(e)); }
+    };
+
+    $('btnRefreshBets').onclick = async () => {
+      try {
+        const uid = Number($('userId').value);
+        const bets = await getJSON(`${BASE}/users/${uid}/apuestas`);
+        renderBets(bets);
+      } catch (e) { alert(e); }
+    };
+
+    $('btnRefreshTotal').onclick = async () => {
+      try {
+        const uid = Number($('userId').value);
+        const total = await getJSON(`${BASE}/users/${uid}/bets/total`);
+        show('outTotal', total);
+      } catch (e) { show('outTotal', String(e)); }
+    };
+
+    // Initial load
+    loadItems().catch(() => {});
+</script>
+</body>
+</html>

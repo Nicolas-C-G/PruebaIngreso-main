@@ -92,4 +92,9 @@ public class FrontController {
     return frontService.getUserTotalBet(userId);
   }
 
+  @GetMapping("/users/{userId}/apuestas")
+  public java.util.List<ResApuestaDetailDto> getUserBets(@PathVariable Integer userId) {
+    return frontService.getUserBets(userId);
+  }
+
 }
