@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 
 /**
@@ -113,4 +114,28 @@ public class FrontServiceImpl implements FrontService {
                     apuesta.getAmount()))
         .orElse(null);
   }
+
+  @Override
+  /**
+   * {@inheritDoc}
+   */
+  public ResTotalBetUserDto getUserTotalBet(Integer userId) {
+    //BigDecimal total = apuestaRepository.sumAmountByUserId(userId);
+    BigDecimal total = Optional.ofNullable(apuestaRepository.sumAmountByUserId(userId))
+            .orElse(BigDecimal.ZERO);
+    return new ResTotalBetUserDto(userId, total);
+  }
+
+  @Override
+  public java.util.List<ResApuestaDetailDto> getUserBets(Integer userId) {
+    return apuestaRepository.findByUsuario_Id(userId).stream()
+            .map(a -> new ResApuestaDetailDto(
+                    a.getId(),
+                    a.getItem().getId(),
+                    a.getItem().getName(),
+                    a.getAmount()
+            ))
+            .toList();
+  }
+
 }

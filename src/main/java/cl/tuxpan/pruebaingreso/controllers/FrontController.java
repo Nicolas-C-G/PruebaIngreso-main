@@ -1,8 +1,11 @@
 package cl.tuxpan.pruebaingreso.controllers;
 
 import cl.tuxpan.pruebaingreso.dtos.*;
+import cl.tuxpan.pruebaingreso.repositories.UsuarioRepository;
 import cl.tuxpan.pruebaingreso.services.interfaces.FrontService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import io.micrometer.core.annotation.Timed;
 
 
 /**
@@ -13,10 +16,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1")
 public class FrontController {
 
-  FrontService frontService;
+  private final UsuarioRepository usuarioRepository;
+  private final FrontService frontService;
 
-  FrontController(FrontService frontService) {
+  @Autowired
+  FrontController(FrontService frontService, UsuarioRepository usuarioRepository) {
     this.frontService = frontService;
+    this.usuarioRepository = usuarioRepository;
   }
 
   /**
@@ -64,7 +70,7 @@ public class FrontController {
    * */
 
   @PostMapping("/apuesta")
-  public ResApuestaDto addApuesta(@RequestBody ReqAddApuestaDto reqAddApuestaDto) {
+  public ResApuestaDto addApuesta(@RequestBody @jakarta.validation.Valid ReqAddApuestaDto reqAddApuestaDto) {
     return frontService.addApuesta(reqAddApuestaDto);
   }
 
@@ -74,8 +80,32 @@ public class FrontController {
    * @param itemId: Item identifier (path variable)
    * @return Winner data (item + user + amount)  or {@code null} if the item has no bets
    * */
+  @Timed(value = "winner.endpoint", percentiles = {0.5, 0.9, 0.99})
   @GetMapping("/winner/{itemId}")
   public ResWinnerDto getWinner(@PathVariable Integer itemId) {
     return frontService.getWinner(itemId);
+  }
+
+  /**
+   * Returns the total bet amount placed by a specific user.
+   *
+   * @param userId: User identifier (path variable)
+   * @return A DTO with the user id and the aggregated total bet amount
+   * */
+  @GetMapping("/users/{userId}/bets/total")
+  public ResTotalBetUserDto getUserTotalBet(@PathVariable Integer userId) {
+    return frontService.getUserTotalBet(userId);
+  }
+
+  @GetMapping("/users/{userId}/apuestas")
+  public java.util.List<ResApuestaDetailDto> getUserBets(@PathVariable Integer userId) {
+    return frontService.getUserBets(userId);
+  }
+
+  @GetMapping("/users/{userId}")
+  public ResUsuarioDto getUser(@PathVariable Integer userId) {
+    var user = usuarioRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    return new ResUsuarioDto(user.getId(), user.getName());
   }
 }

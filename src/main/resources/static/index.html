@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Subasta Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+        body { margin: 24px; background: #fafafa; color: #222; }
+        h1 { margin-bottom: 8px; }
+        .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+        .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+        .row { display: flex; gap: 8px; margin-block: 8px; flex-wrap: wrap; }
+        input, button { padding: 10px 12px; border-radius: 10px; border: 1px solid #ddd; }
+        button { background: #111; color: #fff; cursor: pointer; border: none; }
+        button.secondary { background: #444; }
+        pre { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 10px; overflow: auto; }
+        .muted { color: #666; font-size: 12px; }
+        label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    </style>
+</head>
+<body>
+<h1>Subasta Manager</h1>
+<p class="muted">Quick UI to call your API.</p>
+
+<div class="grid">
+    <!-- Create Item -->
+    <div class="card">
+        <h3>Create Item</h3>
+        <div class="row">
+            <div>
+                <label>Item name</label>
+                <input id="itemName" placeholder="e.g. Laptop" />
+            </div>
+            <button id="btnCreateItem">Create</button>
+        </div>
+        <pre id="outCreateItem"></pre>
+    </div>
+
+    <!-- List Items -->
+    <div class="card">
+        <h3>List Items</h3>
+        <div class="row">
+            <button id="btnListItems">Refresh</button>
+        </div>
+        <pre id="outListItems"></pre>
+    </div>
+
+    <!-- Place Bet -->
+    <div class="card">
+        <h3>Place Bet</h3>
+        <div class="two">
+            <div>
+                <label>Item ID</label>
+                <input id="betItemId" type="number" placeholder="item id" />
+            </div>
+            <div>
+                <label>User name</label>
+                <input id="betUser" placeholder="usuarioNombre" />
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label>Monto Apuesta</label>
+                <input id="betAmount" type="number" placeholder="e.g. 1000" />
+            </div>
+            <button id="btnPlaceBet">Place</button>
+        </div>
+        <pre id="outPlaceBet"></pre>
+        <p class="muted">Validation: nombre 5–50 chars, monto 1000–999,999,999.</p>
+    </div>
+
+    <!-- Winner by Item -->
+    <div class="card">
+        <h3>Winner</h3>
+        <div class="row">
+            <input id="winnerItemId" type="number" placeholder="item id" />
+            <button id="btnGetWinner">Get winner</button>
+        </div>
+        <pre id="outWinner"></pre>
+    </div>
+
+    <!-- Total by User -->
+    <div class="card">
+        <h3>Total Bet by User</h3>
+        <div class="row">
+            <input id="totalUserId" type="number" placeholder="user id" />
+            <button id="btnGetTotal">Get total</button>
+        </div>
+        <pre id="outTotal"></pre>
+    </div>
+
+    <!-- Admin (dev/test profile only) -->
+    <div class="card">
+        <h3>Admin (dev/test)</h3>
+        <div class="row">
+            <button id="btnListBets" class="secondary">List Bets</button>
+        </div>
+        <pre id="outAdmin"></pre>
+        <p class="muted">Requires profile <code>dev</code> or <code>test</code> active.</p>
+    </div>
+</div>
+
+<script>
+    const BASE = '/api/v1';
+
+    const el = id => document.getElementById(id);
+    const show = (id, data) => el(id).textContent = (typeof data === 'string') ? data : JSON.stringify(data, null, 2);
+
+    async function postJSON(url, body) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(body)
+      });
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) throw new Error((data && data.message) || res.status + ' ' + res.statusText);
+      return data;
+    }
+
+    async function getJSON(url) {
+      const res = await fetch(url);
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      if (!res.ok) throw new Error((data && data.message) || res.status + ' ' + res.statusText);
+      return data;
+    }
+
+    // Create item
+    el('btnCreateItem').onclick = async () => {
+      show('outCreateItem', '…');
+      try {
+        const name = el('itemName').value.trim();
+        const data = await postJSON(`${BASE}/item`, { name });
+        show('outCreateItem', data);
+      } catch (e) { show('outCreateItem', String(e)); }
+    };
+
+    // List items
+    el('btnListItems').onclick = async () => {
+      show('outListItems', '…');
+      try {
+        const data = await getJSON(`${BASE}/item`);
+        show('outListItems', data);
+      } catch (e) { show('outListItems', String(e)); }
+    };
+
+    // Place bet
+    el('btnPlaceBet').onclick = async () => {
+      show('outPlaceBet', '…');
+      try {
+        const itemId = Number(el('betItemId').value);
+        const usuarioNombre = el('betUser').value.trim();
+        const montoApuesta = Number(el('betAmount').value);
+        const data = await postJSON(`${BASE}/apuesta`, { itemId, usuarioNombre, montoApuesta });
+        show('outPlaceBet', data);
+      } catch (e) { show('outPlaceBet', String(e)); }
+    };
+
+    // Winner
+    el('btnGetWinner').onclick = async () => {
+      show('outWinner', '…');
+      try {
+        const itemId = Number(el('winnerItemId').value);
+        const data = await getJSON(`${BASE}/winner/${itemId}`);
+        show('outWinner', data ?? '(no bets)');
+      } catch (e) { show('outWinner', String(e)); }
+    };
+
+    // Total by user
+    el('btnGetTotal').onclick = async () => {
+      show('outTotal', '…');
+      try {
+        const userId = Number(el('totalUserId').value);
+        const data = await getJSON(`${BASE}/users/${userId}/bets/total`);
+        show('outTotal', data);
+      } catch (e) { show('outTotal', String(e)); }
+    };
+
+    // Admin — list bets
+    el('btnListBets').onclick = async () => {
+      show('outAdmin', '…');
+      try {
+        const data = await getJSON(`${BASE}/admin/apuestas`);
+        show('outAdmin', data);
+      } catch (e) { show('outAdmin', String(e)); }
+    };
+</script>
+</body>
+</html>
