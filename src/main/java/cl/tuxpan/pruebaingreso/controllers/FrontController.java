@@ -1,7 +1,9 @@
 package cl.tuxpan.pruebaingreso.controllers;
 
 import cl.tuxpan.pruebaingreso.dtos.*;
+import cl.tuxpan.pruebaingreso.repositories.UsuarioRepository;
 import cl.tuxpan.pruebaingreso.services.interfaces.FrontService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.micrometer.core.annotation.Timed;
 
@@ -14,10 +16,13 @@ import io.micrometer.core.annotation.Timed;
 @RequestMapping("/api/v1")
 public class FrontController {
 
-  FrontService frontService;
+  private final UsuarioRepository usuarioRepository;
+  private final FrontService frontService;
 
-  FrontController(FrontService frontService) {
+  @Autowired
+  FrontController(FrontService frontService, UsuarioRepository usuarioRepository) {
     this.frontService = frontService;
+    this.usuarioRepository = usuarioRepository;
   }
 
   /**
@@ -97,4 +102,10 @@ public class FrontController {
     return frontService.getUserBets(userId);
   }
 
+  @GetMapping("/users/{userId}")
+  public ResUsuarioDto getUser(@PathVariable Integer userId) {
+    var user = usuarioRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    return new ResUsuarioDto(user.getId(), user.getName());
+  }
 }

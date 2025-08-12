@@ -28,7 +28,7 @@
     <div class="card">
         <h3>Who are you?</h3>
         <div class="row">
-            <label>User ID <input id="userId" type="number" placeholder="Your user id" /></label>
+            <label>User ID <input id="userId" type="number" placeholder="Your user id" min="1" /></label>
             <button id="btnLoad">Load my data</button>
         </div>
         <p class="muted">Tip: if you don't know your id, place a bet with your name once in the other page, then inspect totals.</p>
@@ -120,9 +120,10 @@
       try {
         await loadItems();
         const uid = Number($('userId').value);
+        const user  = await getJSON(`${BASE}/users/${uid}`);
         const total = await getJSON(`${BASE}/users/${uid}/bets/total`);
         const bets  = await getJSON(`${BASE}/users/${uid}/apuestas`);
-        show('outUser', { total });
+        show('outUser', { id: user.id, name: user.nombre, total });
         renderBets(bets);
       } catch (e) { show('outUser', String(e)); }
     };

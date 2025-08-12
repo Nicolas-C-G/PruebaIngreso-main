@@ -96,7 +96,6 @@
         <h3>Admin (dev/test)</h3>
         <div class="row">
             <button id="btnListBets" class="secondary">List Bets</button>
-            <button id="btnCleanupNow">Cleanup Now</button>
         </div>
         <pre id="outAdmin"></pre>
         <p class="muted">Requires profile <code>dev</code> or <code>test</code> active.</p>
@@ -188,16 +187,6 @@
       try {
         const data = await getJSON(`${BASE}/admin/apuestas`);
         show('outAdmin', data);
-      } catch (e) { show('outAdmin', String(e)); }
-    };
-
-    // Admin — cleanup now (if you added this endpoint)
-    el('btnCleanupNow').onclick = async () => {
-      show('outAdmin', '…');
-      try {
-        const res = await fetch(`${BASE}/admin/cleanup-now`, { method: 'POST' });
-        const txt = await res.text();
-        show('outAdmin', txt || res.status);
       } catch (e) { show('outAdmin', String(e)); }
     };
 </script>
